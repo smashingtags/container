@@ -1,0 +1,6 @@
+{
+   "appname": "docker-mod-qbittorrent",
+   "apppic": "./images/docker-mod-qbittorrent.png",
+   "appfolder": "./mod/docker-mod-qbittorrent",
+   "user": "github-actions[bot]"
+}

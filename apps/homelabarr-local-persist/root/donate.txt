@@ -1,0 +1,31 @@
+    ____             __   _____                          
+   / __ \____  _____/ /__/ ___/___  ______   _____  ____
+  / / / / __ \/ ___/ //_/\__ \/ _ \/ ___/ | / / _ \/ __ \
+ / /_/ / /_/ / /__/ ,<  ___/ /  __/ /   | |/ /  __/ /_/ /
+/_____/\____/\___/_/|_|/____/\___/_/    |___/\___/\____/ 
+
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║                          DockServer                          ║
+║        Docker + Traefik with Authelia and Cloudflare        ║
+║                                                              ║
+║                    Local-Persist Plugin                     ║
+║              Enhanced for DockServer Ecosystem              ║
+║                                                              ║
+║  🎯 Features:                                               ║
+║     • Custom mountpoint support                             ║
+║     • Persistent volumes across container restarts          ║
+║     • Integration with DockServer monitoring                ║
+║     • UnionFS compatibility                                 ║
+║     • Enhanced reliability and error handling               ║
+║                                                              ║
+║  📚 Documentation: https://dockserver.io/                   ║
+║  💬 Support: https://discord.gg/dockserver                  ║
+║  🐛 Issues: https://github.com/dockserver/dockserver        ║
+║                                                              ║
+║  💝 Support DockServer Development:                         ║
+║     • GitHub Sponsors                                       ║
+║     • PayPal Donations                                      ║
+║     • Community Contributions                               ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝

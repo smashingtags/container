@@ -1,0 +1,39 @@
+#!/command/with-contenv bash
+
+PUID=${PUID:-911}
+PGID=${PGID:-911}
+
+groupmod -o -g "$PGID" abc
+usermod -o -u "$PUID" abc
+
+SCRIPTS_DIR="/config/custom-cont-init.d"
+SERVICES_DIR="/config/custom-services.d"
+
+##bypass v3 s6-overlay /command part
+
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+folder="/etc/cont-init.d /etc/services.d /app /config /system /defaults"
+for i in ${folder[@]}; do
+   find $i -mindepth 1 -type f | while read rename; do
+      sed -i 's|/usr/bin|/command|g' ${rename} &>/dev/null
+   done
+done
+
+sections="/etc/cont-init.d /etc/cont-finish.d /etc/services.d /app /tmp /config /defaults /system"
+for letsdoit in ${sections[@]}; do
+  [[ ! "$(stat -c %u $letsdoit)" = $PUID ]] && \
+    mkdir -p $letsdoit &>/dev/null &&
+      chown -R abc:abc $letsdoit &>/dev/null &&
+        chmod -R 0755 $letsdoit &>/dev/null
+done
+
+removefolder="${SERVICES_DIR} ${SCRIPTS_DIR}"
+
+for i in ${removefolder[@]}; do
+  [[ -d $i ]] && \
+    rm -rf $i
+done
+
+rm -rf /var/cache/apk/*

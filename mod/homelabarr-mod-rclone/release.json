@@ -1,0 +1,6 @@
+{
+   "appname": "docker-mod-rclone",
+   "apppic": "./images/docker-mod-rclone.png",
+   "appfolder": "./mod/docker-mod-rclone",
+   "user": "github-actions[bot]"
+}

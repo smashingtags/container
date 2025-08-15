@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  local-persist:
+    image: dockserver/docker-local-persist:test
+    container_name: dockserver-local-persist-test
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /run/docker/plugins:/run/docker/plugins
+      - /var/lib/docker/plugin-data:/var/lib/docker/plugin-data
+      - /opt/appdata:/opt/appdata
+      - /mnt:/mnt
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "test", "-S", "/run/docker/plugins/local-persist.sock"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+
+networks:
+  default:
+    name: dockserver-test

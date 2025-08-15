@@ -1,0 +1,36 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+# DockServer Local-Persist Volume Plugin Service
+# Maintainer: DockServer Team
+
+set -e
+
+echo "[INFO] Starting DockServer Local-Persist Volume Plugin..."
+
+# Ensure directories exist with correct permissions
+mkdir -p /var/lib/docker/plugin-data
+mkdir -p /run/docker/plugins
+chown -R abc:abc /var/lib/docker/plugin-data /run/docker/plugins
+
+# Remove any existing socket
+rm -f /run/docker/plugins/local-persist.sock
+
+# DockServer branding
+echo "
+╔═══════════════════════════════════════════════════════════════╗
+║                        DockServer                             ║
+║               Local-Persist Volume Plugin                    ║
+║                                                               ║
+║    Docker + Traefik with Authelia and Cloudflare Protection  ║
+╚═══════════════════════════════════════════════════════════════╝
+"
+
+echo "[INFO] Plugin Socket: /run/docker/plugins/local-persist.sock"
+echo "[INFO] Data Directory: /var/lib/docker/plugin-data"
+echo "[INFO] Starting local-persist daemon..."
+
+# Start local-persist with DockServer optimizations
+exec s6-setuidgid abc /usr/local/bin/local-persist \
+    -dbpath=/var/lib/docker/plugin-data \
+    -listen=/run/docker/plugins/local-persist.sock

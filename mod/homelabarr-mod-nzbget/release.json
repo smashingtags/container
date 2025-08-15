@@ -1,0 +1,6 @@
+{
+   "appname": "docker-mod-nzbget",
+   "apppic": "./images/docker-mod-nzbget.png",
+   "appfolder": "./mod/docker-mod-nzbget",
+   "user": "github-actions[bot]"
+}

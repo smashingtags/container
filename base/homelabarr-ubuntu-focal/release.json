@@ -1,0 +1,10 @@
+{
+   "appname": "docker-ubuntu-focal",
+   "apppic": "./images/docker-ubuntu-focal.png",
+   "appfolder": "./base/docker-ubuntu-focal",
+   "newversion": "3.22.1",
+   "baseimage": "alpine",
+   "description": "Docker image  for docker-ubuntu-focal",
+   "body": "Upgrading docker-ubuntu-focal to baseimage: alpine:3.22.1",
+   "user": "dockserver image update[bot]"
+}

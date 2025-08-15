@@ -1,0 +1,28 @@
+#!/usr/bin/with-contenv bash
+
+PUID=${PUID:-911}
+PGID=${PGID:-911}
+
+groupmod -o -g "$PGID" abc
+usermod -o -u "$PUID" abc
+
+SCRIPTS_DIR="/config/custom-cont-init.d"
+SERVICES_DIR="/config/custom-services.d"
+
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+folder="/app /config /defaults /system"
+removefolder="${SERVICES_DIR} ${SCRIPTS_DIR}"
+PUID=${PUID:-911}
+
+for i in ${folder[@]}; do
+  [[ ! "$(stat -c %u $i)" = $PUID ]] && \
+   chown abc:abc -R $i
+done
+
+for i in ${removefolder[@]}; do
+  [[ -d $i ]] && \
+   rm -rf $i
+done
+

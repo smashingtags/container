@@ -1,0 +1,6 @@
+{
+   "appname": "docker-mod-storagecheck",
+   "apppic": "./images/docker-mod-storagecheck.png",
+   "appfolder": "./mod/docker-mod-storagecheck",
+   "user": "github-actions[bot]"
+}
