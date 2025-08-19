@@ -1,7 +1,0 @@
-  #####################################
-  # DockServer Local-Persist          #
-  # Docker Volume Plugin              #
-  #####################################
-  # Based on local-persist by CWSpear #
-  # Enhanced for DockServer ecosystem #
-  #####################################

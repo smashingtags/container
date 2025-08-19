@@ -1,10 +1,10 @@
 {
-   "appname": "docker-spotweb",
+   "appname": "homelabarr-spotweb",
    "apppic": "",
-   "appfolder": "./apps/docker-spotweb",
+   "appfolder": "./apps/homelabarr-spotweb",
    "newversion": "1.5.8",
    "baseimage": "ubuntu:latest",
    "description": "Decentralized community",
-   "body": "Upgrading docker-spotweb to 1.5.8",
+   "body": "Upgrading homelabarr-spotweb to 1.5.8",
    "user": "dockserver[bot]"
 }

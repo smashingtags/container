@@ -97,20 +97,20 @@ ENTRYPOINT ["'"./aniDL"'"]
 
 #####
 
-#docker pull ghcr.io/dockserver/docker-crunchydl:latest 
+#docker pull ghcr.io/dockserver/homelabarr-crunchydl:latest 
 
 ### FOR LOGIN ###
 #  docker run -it --rm \
 #    --name crunchy \
 #    -v /opt/appdata/crunchy:/config:rw \
-#    ghcr.io/dockserver/docker-crunchydl:latest \
+#    ghcr.io/dockserver/homelabarr-crunchydl:latest \
 #    --service crunchy --auth
 
 #  ## GET NEWS FILES ##
 #  CHK=/opt/appdata/crunchy/download.txt
 #  docker run -i --rm \
 #    -v /opt/appdata/crunchy:/config:rw \
-#    ghcr.io/dockserver/docker-crunchydl:latest \
+#    ghcr.io/dockserver/homelabarr-crunchydl:latest \
 #    --service ${SHOWLINK[0]} --new > /opt/appdata/crunchy/newfiles.txt
 
 #  cat /opt/appdata/crunchy/newfiles.txt | grep -e "Season" | grep -E "Z:" | sed 's/[#$%*@]//g' | cut -d: -f2 | awk '{print $1}' | while IFS=$'|' read -ra SHOWLINK ; do
@@ -127,7 +127,7 @@ ENTRYPOINT ["'"./aniDL"'"]
 #      docker run -i --rm \
 #      -v /opt/appdata/crunchy:/config:rw \
 #      -v /mnt/downloads/crunchy:/videos:rw \
-#      ghcr.io/dockserver/docker-crunchydl:latest \
+#      ghcr.io/dockserver/homelabarr-crunchydl:latest \
 #      --service ${SHOWLINK[0]} \
 #      --series ${SHOWLINK[2]} \
 #      --dlsubs all --all \
@@ -150,7 +150,7 @@ ENTRYPOINT ["'"./aniDL"'"]
 #       done
 #  done
 
-# ghcr.io/dockserver/docker-crunchydl:latest
+# ghcr.io/dockserver/homelabarr-crunchydl:latest
 
 #  $(which cat) "${CHK}" | head -n 1 | while IFS=$'|' read -ra SHOWLINK ; do
 #  $(which echo) "**** downloading now ${SHOWLINK[1]} ****"

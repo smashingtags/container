@@ -17,12 +17,13 @@
 # shellcheck disable=SC2086
 # shellcheck disable=SC2046
 FROM alpine:latest AS build
-LABEL org.opencontainers.image.source="https://github.com/dockserver/container"
+LABEL org.opencontainers.image.source="https://github.com/smashingtags/homelabarr-containers"
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG VERSION=null
 
+# Architecture-specific download URLs
 RUN apk --quiet --no-cache --no-progress update && \
     apk --quiet --no-cache --no-progress upgrade && \
     rm -rf /app && \
@@ -30,12 +31,29 @@ RUN apk --quiet --no-cache --no-progress update && \
     apk add -U --update --no-cache --no-progress \
       p7zip bash ca-certificates shadow musl \
       findutils linux-headers coreutils apk-tools busybox && \
-    wget https://github.com/dockserver/multi-downloader-nx/releases/download/$VERSION/multi-downloader-nx-ubuntu-cli.7z -O /app/crunchy.7z && \
+    echo "**** Architecture: $TARGETPLATFORM ****" && \
+    case "$TARGETPLATFORM" in \
+      "linux/amd64") \
+        DOWNLOAD_FILE="multi-downloader-nx-ubuntu-cli.7z"; \
+        EXTRACT_BINARY="multi-downloader-nx-ubuntu64-cli"; \
+        ;; \
+      "linux/arm64") \
+        DOWNLOAD_FILE="multi-downloader-nx-ubuntu-cli.7z"; \
+        EXTRACT_BINARY="multi-downloader-nx-ubuntu64-cli"; \
+        echo "Note: Using same binary for ARM64 - may need architecture-specific build"; \
+        ;; \
+      *) \
+        echo "Unsupported platform: $TARGETPLATFORM"; \
+        DOWNLOAD_FILE="multi-downloader-nx-ubuntu-cli.7z"; \
+        EXTRACT_BINARY="multi-downloader-nx-ubuntu64-cli"; \
+        ;; \
+    esac && \
+    wget "https://github.com/dockserver/multi-downloader-nx/releases/download/$VERSION/$DOWNLOAD_FILE" -O /app/crunchy.7z && \
     cd /app && \
     7z e crunchy.7z && \
     rm -rf \
        /app/crunchy.7z \
-       /app/multi-downloader-nx-ubuntu64-cli \
+       /app/$EXTRACT_BINARY \
        /app/config/cli-defaults.yml
 
 FROM debian:bullseye-slim

@@ -1,5 +1,0 @@
-  bash
-  curl
-  jq
-  local-persist
-  EOF

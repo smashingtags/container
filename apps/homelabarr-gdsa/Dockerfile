@@ -17,23 +17,32 @@
 # shellcheck disable=SC2086
 # shellcheck disable=SC2046
 FROM gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
-LABEL org.opencontainers.image.source="https://github.com/dockserver/container"
+LABEL org.opencontainers.image.source="https://github.com/smashingtags/homelabarr-containers"
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG VERSION="534.0.0-alpine"
 
+# Architecture-specific setup for ARM64 compatibility
 RUN \
+  echo "**** Platform: $TARGETPLATFORM ****" && \
   echo "**** update packages ****" && \
     apk --quiet --no-cache --no-progress update && \
   apk --quiet --no-cache --no-progress upgrade && \
   echo "**** install build packages ****" && \
-    apk add -U --update --no-cache bash curl shadow musl findutils coreutils ca-certificates musl && \
+    apk add -U --update --no-cache bash curl shadow musl findutils coreutils ca-certificates && \
+  echo "**** architecture-specific setup ****" && \
+    if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+      echo "Setting up ARM64 specific configurations"; \
+      apk add --no-cache gcc musl-dev; \
+    else \
+      echo "Setting up AMD64 configurations"; \
+    fi && \
   echo "*** cleanup system ****" && \
-    apk del --quiet --clean-protected --no-progress && \
-  rm -f /var/cache/apk/*
+    apk del --quiet --clean-protected --no-progress gcc musl-dev 2>/dev/null || true && \
+  rm -rf /var/cache/apk/* /tmp/*
 
-COPY ./apps/docker-gdsa/root/ /
+COPY ./apps/homelabarr-gdsa/root/ /
 
 ENTRYPOINT ["/bin/bash", "/gdsastart.sh"]
 ##EOF

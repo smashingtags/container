@@ -1,10 +1,10 @@
 {
-   "appname": "docker-vnstat",
-   "apppic": "./images/docker-vnstat.png",
-   "appfolder": "./apps/docker-vnstat",
+   "appname": "homelabarr-vnstat",
+   "apppic": "./images/homelabarr-vnstat.png",
+   "appfolder": "./apps/homelabarr-vnstat",
    "newversion": "8-apache",
    "baseimage": "php",
-   "description": "Docker image  for docker-vnstat",
-   "body": "Upgrading docker-vnstat to baseimage: php:8-apache",
+   "description": "Docker image  for homelabarr-vnstat",
+   "body": "Upgrading homelabarr-vnstat to baseimage: php:8-apache",
    "user": "dockserver image update[bot]"
 }

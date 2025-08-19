@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   local-persist:
-    image: dockserver/docker-local-persist:test
+    image: dockserver/homelabarr-local-persist:test
     container_name: dockserver-local-persist-test
     restart: unless-stopped
     privileged: true

@@ -33,7 +33,7 @@ RUN apt-get update -y && \
     apt-get upgrade -y && \
     apt-get install wget jq curl locales apt-utils bash -y
 
-COPY ./apps/docker-crunchy/entrypoint.sh /entrypoint.sh
+COPY ./apps/homelabarr-crunchy/entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
 ##EOF

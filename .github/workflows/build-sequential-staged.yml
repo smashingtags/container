@@ -1,4 +1,4 @@
-name: Build and Publish All HomelabARR Containers
+name: Build Containers - Sequential Staged Pipeline
 
 on:
   push:
@@ -8,31 +8,150 @@ on:
       - 'base/**'
       - 'mod/**'
       - 'nightly/**'
-      - '.github/workflows/build-all-containers.yml'
+      - '.github/workflows/build-sequential-staged.yml'
   workflow_dispatch:
+    inputs:
+      stage:
+        description: 'Stage to run (all, base, apps, mods, nightly, arm64-fixes)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'base'
+          - 'apps'
+          - 'mods'
+          - 'nightly'
+          - 'arm64-fixes'
 
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: smashingtags
 
 jobs:
-  build-apps:
+  # Stage 1: Base Images - Sequential Build
+  build-base-images:
+    if: github.event.inputs.stage == 'all' || github.event.inputs.stage == 'base' || github.event.inputs.stage == ''
     runs-on: self-hosted
     permissions:
       contents: read
       packages: write
     strategy:
       fail-fast: false
+      max-parallel: 1  # Sequential builds to prevent resource exhaustion
+      matrix:
+        base-image:
+          - docker-ubuntu-focal
+          - docker-ubuntu-jammy
+          - docker-ubuntu-noble
+          - docker-alpine-v3
+          - docker-ui
+          - homelabarr-ui
+          - docker-config
+          - docker-create
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.base-image }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=v1.0.0,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=${{ matrix.base-image }}
+            org.opencontainers.image.description=HomelabARR Base Image - ${{ matrix.base-image }}
+            org.opencontainers.image.vendor=HomelabARR CLI
+            org.opencontainers.image.licenses=MIT
+      
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./base/${{ matrix.base-image }}/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Send Discord notification
+        if: always() && (steps.build.outcome == 'success')
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          CONTAINER: ${{ matrix.base-image }}
+        run: |
+          TIMESTAMP=$(date -u +'%FT%T.%3NZ')
+          json='{
+            "username": "HomelabARR Container Bot",
+            "avatar_url": "https://raw.githubusercontent.com/smashingtags/homelabarr-cli/master/wiki/overrides/img/profile.png",
+            "embeds": [{
+              "author": {
+                "name": "smashingtags",
+                "icon_url": "https://avatars.githubusercontent.com/u/45863998"
+              },
+              "title": "'"${CONTAINER}"' (Base Image)",
+              "url": "https://github.com/smashingtags/homelabarr-containers/pkgs/container/'"${CONTAINER}"'",
+              "color": 3066993,
+              "fields": [
+                {
+                  "name": "Stage",
+                  "value": "Base Images (Sequential)"
+                },
+                {
+                  "name": "Container Info", 
+                  "value": "Built base image `'"${CONTAINER}"'`"
+                },
+                {
+                  "name": "Version",
+                  "value": "latest • '"${GITHUB_SHA:0:7}"'"
+                }
+              ],
+              "footer": {
+                "text": "HomelabARR Sequential Pipeline",
+                "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+              },
+              "timestamp": "'"${TIMESTAMP}"'"
+            }]
+          }'
+          if [ -n "${DISCORD_WEBHOOK}" ]; then
+            curl -fsSL -H "Content-Type: application/json" -X POST -d "${json}" "${DISCORD_WEBHOOK}" || true
+          fi
+
+  # Stage 2A: Application Containers Batch 1
+  build-apps-batch1:
+    if: github.event.inputs.stage == 'all' || github.event.inputs.stage == 'apps' || github.event.inputs.stage == ''
+    needs: build-base-images
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      max-parallel: 5  # Controlled concurrency
       matrix:
         container:
-          - homelabarr-auto-replyarr
           - homelabarr-backup
           - homelabarr-crunchy
-          - homelabarr-crunchydl
           - homelabarr-dockupdate
-          - homelabarr-gdsa
-          - homelabarr-gui
-          - homelabarr-local-persist
           - homelabarr-mount
           - homelabarr-newznab
           - homelabarr-restic
@@ -40,25 +159,6 @@ jobs:
           - homelabarr-spotweb
           - homelabarr-traktarr
           - homelabarr-uploader
-          - homelabarr-vnstat
-          - homelabarr-wiki
-          - homelabarr-auto-replyarr
-          - homelabarr-backup
-          - homelabarr-crunchy
-          - homelabarr-crunchydl
-          - homelabarr-dockupdate
-          - homelabarr-gdsa
-          - homelabarr-gui
-          - homelabarr-local-persist
-          - homelabarr-mount
-          - homelabarr-newznab
-          - homelabarr-restic
-          - homelabarr-rollarr
-          - homelabarr-spotweb
-          - homelabarr-traktarr
-          - homelabarr-uploader
-          - homelabarr-vnstat
-          - homelabarr-wiki
     
     steps:
       - name: Checkout repository
@@ -82,8 +182,6 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=v1.0.0,enable={{is_default_branch}}
           labels: |
@@ -125,28 +223,20 @@ jobs:
               "color": 3066993,
               "fields": [
                 {
-                  "name": "Container Info",
-                  "value": "We published a new container image `'"${CONTAINER}"'`"
+                  "name": "Stage",
+                  "value": "Applications Batch 1"
                 },
                 {
-                  "name": "Description",
-                  "value": "HomelabARR Application Container"
+                  "name": "Container Info",
+                  "value": "Built application `'"${CONTAINER}"'`"
                 },
                 {
                   "name": "Version",
                   "value": "latest • '"${GITHUB_SHA:0:7}"'"
-                },
-                {
-                  "name": "Docker Tags",
-                  "value": "`ghcr.io/smashingtags/'"${CONTAINER}"':latest`\n`ghcr.io/smashingtags/'"${CONTAINER}"':v1.0.0`"
-                },
-                {
-                  "name": "Thanks!",
-                  "value": "Thanks to all Contributors"
                 }
               ],
               "footer": {
-                "text": "Powered by GitHub Actions",
+                "text": "HomelabARR Sequential Pipeline",
                 "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
               },
               "timestamp": "'"${TIMESTAMP}"'"
@@ -156,37 +246,22 @@ jobs:
             curl -fsSL -H "Content-Type: application/json" -X POST -d "${json}" "${DISCORD_WEBHOOK}" || true
           fi
 
-  build-base:
+  # Stage 2B: Application Containers Batch 2 (Normal containers)
+  build-apps-batch2:
+    if: github.event.inputs.stage == 'all' || github.event.inputs.stage == 'apps' || github.event.inputs.stage == ''
+    needs: build-apps-batch1
     runs-on: self-hosted
     permissions:
       contents: read
       packages: write
     strategy:
       fail-fast: false
+      max-parallel: 5
       matrix:
         container:
-          - alpine
-          - docker-alpine
-          - docker-alpine-v3
-          - docker-config
-          - docker-create
-          - docker-dockserver
-          - docker-ubuntu-focal
-          - docker-ubuntu-jammy
-          - docker-ubuntu-noble
-          - docker-ui
-          - dockserver-ui
-          - dockserver-ui/root
-          - homelabarr-alpine
-          - homelabarr-alpine-v3
-          - homelabarr-config
-          - homelabarr-create
-          - homelabarr-dockserver
-          - homelabarr-ubuntu-focal
-          - homelabarr-ubuntu-jammy
-          - homelabarr-ubuntu-noble
-          - homelabarr-ui
-          - ubuntu
+          - homelabarr-auto-replyarr
+          - homelabarr-wiki
+          # Skip problematic ARM64 containers for now
     
     steps:
       - name: Checkout repository
@@ -210,13 +285,11 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=v1.0.0,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.title=${{ matrix.container }}
-            org.opencontainers.image.description=HomelabARR Base Image - ${{ matrix.container }}
+            org.opencontainers.image.description=HomelabARR Application - ${{ matrix.container }}
             org.opencontainers.image.vendor=HomelabARR CLI
             org.opencontainers.image.licenses=MIT
       
@@ -225,15 +298,13 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./base/${{ matrix.container }}/Dockerfile
+          file: ./apps/${{ matrix.container }}/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            VERSION=22.04
       
       - name: Send Discord notification
         if: always() && (steps.build.outcome == 'success')
@@ -255,28 +326,20 @@ jobs:
               "color": 3066993,
               "fields": [
                 {
-                  "name": "Container Info",
-                  "value": "We published a new base image `'"${CONTAINER}"'`"
+                  "name": "Stage",
+                  "value": "Applications Batch 2"
                 },
                 {
-                  "name": "Description",
-                  "value": "HomelabARR Base Image"
+                  "name": "Container Info",
+                  "value": "Built application `'"${CONTAINER}"'`"
                 },
                 {
                   "name": "Version",
                   "value": "latest • '"${GITHUB_SHA:0:7}"'"
-                },
-                {
-                  "name": "Docker Tags",
-                  "value": "`ghcr.io/smashingtags/'"${CONTAINER}"':latest`\n`ghcr.io/smashingtags/'"${CONTAINER}"':v1.0.0`"
-                },
-                {
-                  "name": "Thanks!",
-                  "value": "Thanks to all Contributors"
                 }
               ],
               "footer": {
-                "text": "Powered by GitHub Actions",
+                "text": "HomelabARR Sequential Pipeline",
                 "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
               },
               "timestamp": "'"${TIMESTAMP}"'"
@@ -286,22 +349,19 @@ jobs:
             curl -fsSL -H "Content-Type: application/json" -X POST -d "${json}" "${DISCORD_WEBHOOK}" || true
           fi
 
+  # Stage 3: Mod Containers
   build-mods:
+    if: github.event.inputs.stage == 'all' || github.event.inputs.stage == 'mods' || github.event.inputs.stage == ''
+    needs: build-apps-batch2
     runs-on: self-hosted
     permissions:
       contents: read
       packages: write
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
         container:
-          - docker-mod-healthcheck
-          - docker-mod-nzbget
-          - docker-mod-qbittorrent
-          - docker-mod-rclone
-          - docker-mod-sabnzbd
-          - docker-mod-storagecheck
-          - docker-mod-tautulli
           - homelabarr-mod-healthcheck
           - homelabarr-mod-nzbget
           - homelabarr-mod-qbittorrent
@@ -332,8 +392,6 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=v1.0.0,enable={{is_default_branch}}
           labels: |
@@ -375,28 +433,20 @@ jobs:
               "color": 3066993,
               "fields": [
                 {
-                  "name": "Container Info",
-                  "value": "We published a new Docker mod `'"${CONTAINER}"'`"
+                  "name": "Stage",
+                  "value": "Docker Mods"
                 },
                 {
-                  "name": "Description",
-                  "value": "HomelabARR Docker Modification"
+                  "name": "Container Info",
+                  "value": "Built mod `'"${CONTAINER}"'`"
                 },
                 {
                   "name": "Version",
                   "value": "latest • '"${GITHUB_SHA:0:7}"'"
-                },
-                {
-                  "name": "Docker Tags",
-                  "value": "`ghcr.io/smashingtags/'"${CONTAINER}"':latest`\n`ghcr.io/smashingtags/'"${CONTAINER}"':v1.0.0`"
-                },
-                {
-                  "name": "Thanks!",
-                  "value": "Thanks to all Contributors"
                 }
               ],
               "footer": {
-                "text": "Powered by GitHub Actions",
+                "text": "HomelabARR Sequential Pipeline",
                 "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
               },
               "timestamp": "'"${TIMESTAMP}"'"
@@ -406,16 +456,19 @@ jobs:
             curl -fsSL -H "Content-Type: application/json" -X POST -d "${json}" "${DISCORD_WEBHOOK}" || true
           fi
 
+  # Stage 4: Nightly Builds
   build-nightly:
+    if: github.event.inputs.stage == 'all' || github.event.inputs.stage == 'nightly' || github.event.inputs.stage == ''
+    needs: build-mods
     runs-on: self-hosted
     permissions:
       contents: read
       packages: write
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         container:
-          - docker-whisparr-nightly
           - homelabarr-whisparr-nightly
     
     steps:
@@ -440,8 +493,6 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
             type=raw,value=nightly,enable={{is_default_branch}}
             type=raw,value=latest,enable={{is_default_branch}}
           labels: |
@@ -483,28 +534,137 @@ jobs:
               "color": 3066993,
               "fields": [
                 {
-                  "name": "Container Info",
-                  "value": "We published a new nightly build `'"${CONTAINER}"'`"
+                  "name": "Stage",
+                  "value": "Nightly Builds"
                 },
                 {
-                  "name": "Description",
-                  "value": "HomelabARR Nightly Build"
+                  "name": "Container Info",
+                  "value": "Built nightly `'"${CONTAINER}"'`"
                 },
                 {
                   "name": "Version",
                   "value": "nightly • '"${GITHUB_SHA:0:7}"'"
-                },
-                {
-                  "name": "Docker Tags",
-                  "value": "`ghcr.io/smashingtags/'"${CONTAINER}"':nightly`\n`ghcr.io/smashingtags/'"${CONTAINER}"':latest`"
-                },
-                {
-                  "name": "Thanks!",
-                  "value": "Thanks to all Contributors"
                 }
               ],
               "footer": {
-                "text": "Powered by GitHub Actions",
+                "text": "HomelabARR Sequential Pipeline",
+                "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+              },
+              "timestamp": "'"${TIMESTAMP}"'"
+            }]
+          }'
+          if [ -n "${DISCORD_WEBHOOK}" ]; then
+            curl -fsSL -H "Content-Type: application/json" -X POST -d "${json}" "${DISCORD_WEBHOOK}" || true
+          fi
+
+  # Stage 5: ARM64 Problem Containers (Sequential for debugging)
+  build-arm64-fixes:
+    if: github.event.inputs.stage == 'all' || github.event.inputs.stage == 'arm64-fixes' || github.event.inputs.stage == ''
+    needs: build-nightly
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      max-parallel: 1  # One at a time for easier debugging
+      matrix:
+        container:
+          - homelabarr-gdsa
+          - homelabarr-crunchydl
+          - homelabarr-vnstat
+          - homelabarr-local-persist
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.container }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=v1.0.0,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=${{ matrix.container }}
+            org.opencontainers.image.description=HomelabARR Application (ARM64 Fixed) - ${{ matrix.container }}
+            org.opencontainers.image.vendor=HomelabARR CLI
+            org.opencontainers.image.licenses=MIT
+      
+      - name: Build and push Docker image  
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/${{ matrix.container }}/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Send Discord notification
+        if: always()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          CONTAINER: ${{ matrix.container }}
+          BUILD_STATUS: ${{ steps.build.outcome }}
+        run: |
+          TIMESTAMP=$(date -u +'%FT%T.%3NZ')
+          if [ "$BUILD_STATUS" = "success" ]; then
+            COLOR=3066993
+            STATUS="✅ SUCCESS"
+          else
+            COLOR=15158332
+            STATUS="❌ FAILED"
+          fi
+          
+          json='{
+            "username": "HomelabARR Container Bot",
+            "avatar_url": "https://raw.githubusercontent.com/smashingtags/homelabarr-cli/master/wiki/overrides/img/profile.png",
+            "embeds": [{
+              "author": {
+                "name": "smashingtags",
+                "icon_url": "https://avatars.githubusercontent.com/u/45863998"
+              },
+              "title": "'"${CONTAINER}"' (ARM64 Fix)",
+              "url": "https://github.com/smashingtags/homelabarr-containers/pkgs/container/'"${CONTAINER}"'",
+              "color": '"${COLOR}"',
+              "fields": [
+                {
+                  "name": "Stage",
+                  "value": "ARM64 Problem Containers"
+                },
+                {
+                  "name": "Build Status",
+                  "value": "'"${STATUS}"'"
+                },
+                {
+                  "name": "Container Info",
+                  "value": "ARM64 build attempt for `'"${CONTAINER}"'`"
+                },
+                {
+                  "name": "Version",
+                  "value": "latest • '"${GITHUB_SHA:0:7}"'"
+                }
+              ],
+              "footer": {
+                "text": "HomelabARR Sequential Pipeline",
                 "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
               },
               "timestamp": "'"${TIMESTAMP}"'"

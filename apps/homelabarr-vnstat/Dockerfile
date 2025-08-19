@@ -18,28 +18,37 @@
 # shellcheck disable=SC2046
 FROM php:8-apache
 
-LABEL org.opencontainers.image.source="https://github.com/dockserver/container"
+LABEL org.opencontainers.image.source="https://github.com/smashingtags/homelabarr-containers"
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
+# Architecture-aware package installation for ARM64 compatibility
 RUN \
+  echo "**** Platform: $TARGETPLATFORM ****" && \
   echo "**** install build packages ****" && \
-  rm -rf /etc/apt/sources.list && \
-  echo "deb http://ftp.debian.org/debian experimental main" >>/etc/apt/sources.list && \
-  echo "deb http://ftp.debian.org/debian sid main" >>/etc/apt/sources.list && \
   apt-get update -yqq && \
-  apt-get install -yqq git unzip apt-utils && \
-  apt-get purge libgcc-8-dev -yqq && \
+  apt-get install -yqq \
+    git \
+    unzip \
+    apt-utils \
+    ca-certificates \
+    curl && \
+  echo "**** architecture-specific setup ****" && \
+  if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+    echo "Setting up ARM64 specific configurations"; \
+    apt-get install -yqq build-essential; \
+  else \
+    echo "Setting up AMD64 configurations"; \
+  fi && \
+  echo "**** cleanup ****" && \
   apt-get autoremove -yqq && \
   apt-get autoclean -yqq && \
-  apt-get -t experimental install libc6-dev -yqq && \
-  apt-get autoremove -yqq && \
-  apt-get autoclean -yqq
+  rm -rf /var/lib/apt/lists/*
 
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
 
-COPY ./apps/docker-vnstat/app/ /var/www/html/
+COPY ./apps/homelabarr-vnstat/app/ /var/www/html/
 
 RUN composer install --quiet && mkdir -p /var/lib/vnstat
 

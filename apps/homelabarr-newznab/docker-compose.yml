@@ -2,7 +2,7 @@ version: '3.3'
 services:
   newznab-docker:
     container_name: newznab
-    image: ghcr.io/dockserver/docker-newznab
+    image: ghcr.io/dockserver/homelabarr-newznab
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}

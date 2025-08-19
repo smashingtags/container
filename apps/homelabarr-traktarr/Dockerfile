@@ -41,7 +41,7 @@ RUN \
     apk del --quiet --clean-protected --no-progress && \
     rm -f /var/cache/apk/*
 
-COPY ./apps/docker-traktarr/root/ /
+COPY ./apps/homelabarr-traktarr/root/ /
 
 VOLUME /config
 ##EOF

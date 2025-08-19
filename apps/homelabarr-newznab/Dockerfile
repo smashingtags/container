@@ -28,14 +28,14 @@ RUN mkdir /var/www/newznab/ \
     chmod -R 777 /var/www/newznab/www/covers
     
 #Add Newznab Config File  
-COPY ./apps/docker-newznab/config.php /var/www/newznab/www/config.php
+COPY ./apps/homelabarr-newznab/config.php /var/www/newznab/www/config.php
 RUN chmod 777 /var/www/newznab/www/config.php
 
 # Configure Apache for Newznab site
-COPY ./apps/docker-newznab/newznab.conf /etc/apache2/sites-available/newznab.conf
+COPY ./apps/homelabarr-newznab/newznab.conf /etc/apache2/sites-available/newznab.conf
 
 #Add newznab processing & Config script
-COPY ./apps/docker-newznab/entrypoint.sh /entrypoint.sh
+COPY ./apps/homelabarr-newznab/entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
 
 EXPOSE 80

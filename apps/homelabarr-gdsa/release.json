@@ -1,10 +1,10 @@
 {
-   "appname": "docker-gdsa",
-   "apppic": "./images/docker-gdsa.png",
-   "appfolder": "./apps/docker-gdsa",
+   "appname": "homelabarr-gdsa",
+   "apppic": "./images/homelabarr-gdsa.png",
+   "appfolder": "./apps/homelabarr-gdsa",
    "newversion": "534.0.0-alpine",
    "baseimage": "gcr.io/google.com/cloudsdktool/cloud-sdk",
    "description": "Docker for Creating GDSA keys",
-   "body": "Upgrading docker-gdsa to 534.0.0-alpine",
+   "body": "Upgrading homelabarr-gdsa to 534.0.0-alpine",
    "user": "dockserver-actions[bot]"
 }

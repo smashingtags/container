@@ -1,13 +1,13 @@
 {
-   "appname": "docker-wiki",
-   "apppic": "./images/docker-wiki.png",
-   "appfolder": "./apps/docker-wiki",
+   "appname": "homelabarr-wiki",
+   "apppic": "./images/homelabarr-wiki.png",
+   "appfolder": "./apps/homelabarr-wiki",
    "appbranch": "master",
    "newversion": "3.22.1",
    "appversion": "1.4.72",
    "wikiversion": "9.6.16",
    "baseimage": "alpine",
    "description": "Docker + Traefik with Authelia and Cloudflare Protection",
-   "body": "Upgrading docker-wiki to 3.22.1",
+   "body": "Upgrading homelabarr-wiki to 3.22.1",
    "user": "github-actions[bot]"
 }

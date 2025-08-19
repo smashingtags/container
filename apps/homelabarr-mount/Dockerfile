@@ -67,7 +67,7 @@ RUN \
     apk del --quiet --clean-protected --no-progress && \
     rm -rf /var/cache/apk/* /tmp/*
 
-COPY --chown=abc --chmod=755 ./apps/docker-mount/root/ /
+COPY --chown=abc --chmod=755 ./apps/homelabarr-mount/root/ /
 
 COPY --from=builder --chown=abc --chmod=755 /usr/bin/rclone /usr/local/bin/rclone
 

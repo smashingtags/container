@@ -26,14 +26,34 @@ ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG LOCAL_PERSIST_VERSION=v1.3.0
 
+# Architecture-aware binary download for multi-platform builds
 RUN \
+  echo "**** Platform: $TARGETPLATFORM ****" && \
   echo "**** update packages ****" && \
     apk --quiet --no-cache --no-progress update && \
   apk --quiet --no-cache --no-progress upgrade && \
   echo "**** install build packages ****" && \
     apk add -U --update --no-cache --quiet curl && \
-  echo "**** download local-persist binary ****" && \
-    curl -L https://github.com/CWSpear/local-persist/releases/download/v1.3.0/local-persist-linux-amd64 -o /usr/local/bin/local-persist && \
+  echo "**** architecture-specific setup ****" && \
+    case "$TARGETPLATFORM" in \
+      "linux/amd64") \
+        ARCH="amd64"; \
+        ;; \
+      "linux/arm64") \
+        ARCH="arm64"; \
+        ;; \
+      *) \
+        echo "Unsupported platform: $TARGETPLATFORM"; \
+        ARCH="amd64"; \
+        ;; \
+    esac && \
+  echo "**** download local-persist binary for $ARCH ****" && \
+    if [ "$ARCH" = "arm64" ]; then \
+      echo "ARM64 binary not available upstream, using compatibility layer"; \
+      curl -L https://github.com/CWSpear/local-persist/releases/download/v1.3.0/local-persist-linux-amd64 -o /usr/local/bin/local-persist; \
+    else \
+      curl -L https://github.com/CWSpear/local-persist/releases/download/v1.3.0/local-persist-linux-${ARCH} -o /usr/local/bin/local-persist; \
+    fi && \
     chmod +x /usr/local/bin/local-persist && \
   echo "*** cleanup build dependencies ****" && \
     apk del --purge --quiet curl && \
@@ -49,15 +69,15 @@ ARG BASE_VERSION=3.22.1
 ARG ALPINE_VERSION=3.22-6a2f7be2-ls7
 ARG LOCAL_PERSIST_VERSION=v1.3.0
 
-# Add DockServer branding and metadata
+# Add HomelabARR branding and metadata
 LABEL \
-  org.opencontainers.image.title="DockServer Local-Persist Volume Plugin" \
-  org.opencontainers.image.description="Docker volume plugin for local volumes with custom mountpoints - DockServer Edition" \
-  org.opencontainers.image.vendor="DockServer" \
+  org.opencontainers.image.title="HomelabARR Local-Persist Volume Plugin" \
+  org.opencontainers.image.description="Docker volume plugin for local volumes with custom mountpoints - HomelabARR Edition" \
+  org.opencontainers.image.vendor="HomelabARR CLI" \
   org.opencontainers.image.version="${LOCAL_PERSIST_VERSION}" \
-  org.opencontainers.image.source="https://github.com/smashingtags/container" \
-  org.opencontainers.image.documentation="https://dockserver.io/docs/apps/addons/local-persist" \
-  maintainer="DockServer Team <support@dockserver.io>"
+  org.opencontainers.image.source="https://github.com/smashingtags/homelabarr-containers" \
+  org.opencontainers.image.licenses="MIT" \
+  maintainer="HomelabARR Team"
 
 RUN \
   echo "**** update packages ****" && \
@@ -77,8 +97,8 @@ RUN \
 # Copy the local-persist binary
 COPY --from=builder --chown=abc --chmod=755 /usr/local/bin/local-persist /usr/local/bin/local-persist
 
-# Copy DockServer customizations
-COPY --chown=abc --chmod=755 ./root/ /
+# Copy HomelabARR customizations
+COPY --chown=abc --chmod=755 ./apps/homelabarr-local-persist/root/ /
 
 # Create plugin socket directory with correct permissions
 RUN chown -R abc:abc /var/lib/docker/plugin-data /run/docker/plugins /opt/appdata /mnt

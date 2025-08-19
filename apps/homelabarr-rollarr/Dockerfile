@@ -31,7 +31,7 @@ ENV LANG=C.UTF-8 \
     PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 CMD [ "bash" ]
-COPY ./apps/docker-rollarr/root/ /
+COPY ./apps/homelabarr-rollarr/root/ /
 RUN \
     chmod -R 755 /rollarr/* && \
     bash /rollarr/install.sh

@@ -1,6 +1,0 @@
-ca-certificates
-fuse
-openssh
-py-pip
-python3
-unzip

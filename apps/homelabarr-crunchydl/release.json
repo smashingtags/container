@@ -1,11 +1,11 @@
 {
-   "appname": "docker-crunchydl",
-   "apppic": "./images/docker-crunchydl.png",
-   "appfolder": "./apps/docker-crunchydl",
+   "appname": "homelabarr-crunchydl",
+   "apppic": "./images/homelabarr-crunchydl.png",
+   "appfolder": "./apps/homelabarr-crunchydl",
    "newversion": "null",
    "appbranch": "master",
    "baseimage": "alpine:latest",
    "description": "Docker Container for crunchyroll download client",
-   "body": "Upgrading docker-crunchydl to null",
+   "body": "Upgrading homelabarr-crunchydl to null",
    "user": "dockserver-image[bot]"
 }

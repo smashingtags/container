@@ -33,7 +33,7 @@ RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup &&\
     chmod -R 775 /var/www/spotweb && \
     chown -R www-data:www-data /var/www/spotweb
 
-COPY ./apps/docker-spotweb/root/ /
+COPY ./apps/homelabarr-spotweb/root/ /
 
 RUN chmod u+x /entrypoint.sh
 EXPOSE 80

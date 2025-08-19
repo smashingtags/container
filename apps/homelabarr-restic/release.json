@@ -1,7 +1,7 @@
 {
-   "appname": "docker-restic",
-   "apppic": "./images/docker-restic.png",
-   "appfolder": "./apps/docker-restic",
+   "appname": "homelabarr-restic",
+   "apppic": "./images/homelabarr-restic.png",
+   "appfolder": "./apps/homelabarr-restic",
    "newversion": "3.22.1",
    "rclone": "v1.70.3",
    "baseimage": "alpine",
@@ -9,7 +9,7 @@
    "finalimage": "ghcr.io/linuxserver/baseimage-alpine",
    "baseversion": "3.22-6a2f7be2-ls7",
    "s6stage": "v3.2.1.0",
-   "description": "Docker docker-restic with rclone version v1.70.3 include s6-overlay: v3.2.1.0",
-   "body": "Upgrading docker-restic to baseimage: alpine:3.22-6a2f7be2-ls7 with rclone: v1.70.3 include s6-overlay: v3.2.1.0",
+   "description": "Docker homelabarr-restic with rclone version v1.70.3 include s6-overlay: v3.2.1.0",
+   "body": "Upgrading homelabarr-restic to baseimage: alpine:3.22-6a2f7be2-ls7 with rclone: v1.70.3 include s6-overlay: v3.2.1.0",
    "user": "dockserver image update[bot]"
 }

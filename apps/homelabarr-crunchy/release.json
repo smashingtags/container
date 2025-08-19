@@ -1,10 +1,10 @@
 {
-   "appname": "docker-crunchy",
-   "apppic": "./images/docker-crunchy.png",
-   "appfolder": "./apps/docker-crunchy",
+   "appname": "homelabarr-crunchy",
+   "apppic": "./images/homelabarr-crunchy.png",
+   "appfolder": "./apps/homelabarr-crunchy",
    "newversion": "25.10",
    "baseimage": "ubuntu",
-   "description": "Docker image  for docker-crunchy",
-   "body": "Upgrading docker-crunchy to baseimage: ubuntu:25.10",
+   "description": "Docker image  for homelabarr-crunchy",
+   "body": "Upgrading homelabarr-crunchy to baseimage: ubuntu:25.10",
    "user": "dockserver image update[bot]"
 }

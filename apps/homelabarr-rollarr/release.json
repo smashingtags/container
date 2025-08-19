@@ -1,10 +1,10 @@
 {
-   "appname": "docker-rollarr",
-   "apppic": "./images/docker-rollarr.png",
-   "appfolder": "./apps/docker-rollarr",
+   "appname": "homelabarr-rollarr",
+   "apppic": "./images/homelabarr-rollarr.png",
+   "appfolder": "./apps/homelabarr-rollarr",
    "newversion": "25.10",
    "baseimage": "ubuntu",
    "description": "This is the new and improved Automatic Pre-roll script with a GUI for Plex now called Rollarr!",
-   "body": "Upgrading docker-rollarr to 25.10",
+   "body": "Upgrading homelabarr-rollarr to 25.10",
    "user": "github-actions[bot]"
 }

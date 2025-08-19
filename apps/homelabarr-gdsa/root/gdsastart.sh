@@ -148,7 +148,7 @@ main
 
 ## TO RUN IT 
 ## EASIER IS NOT POSSIBLE 
-##export alias gdsagen='docker run -it -v /opt/appdata/system/servicekeys/:/system/servicekeys/ ghcr.io/dockserver/docker-gdsa:latest /bin/bash /gdsastart.sh'
+##export alias gdsagen='docker run -it -v /opt/appdata/system/servicekeys/:/system/servicekeys/ ghcr.io/dockserver/homelabarr-gdsa:latest /bin/bash /gdsastart.sh'
 ##source ~/.bashrc
 
 #/E_o_F\#
